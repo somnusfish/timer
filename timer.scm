@@ -4,8 +4,7 @@
 (define clock 0)
 
 (define (form inum)
-  (if (> (string-length (number->string inum)) 2)
-      #f
+  (unless (> (string-length (number->string inum)) 2)
       (string-append  (make-string 
                        (- 2 (string-length (number->string inum))) 
                        #\0 )
