@@ -13,6 +13,7 @@
                      (- 2 (string-length (number->string inum))) 
                      #\0 )
                     (number->string inum))))
+
 (define (chstr inum)
   (if (>= inum 60) 
       (string-append (chstr (floor (/ inum 60)))
@@ -61,9 +62,7 @@
                (begin
                  (toggle)
                  (send timer stop))))
-          (else #f))
-        )
-      )
+          (else #f))))
     (super-new)))
 
 (define my-canvas
