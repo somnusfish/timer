@@ -1,10 +1,8 @@
 #lang scheme
 (require scheme/gui/base)
-(define frame (new frame%
-                   [label "timer"]
-                   [width 200]
-                   [height 100]
-                   ))
+
+(define clock 0)
+
 (define (form inum)
   (if (> (string-length (number->string inum)) 2)
       #f
@@ -13,43 +11,61 @@
                        #\0 )
                       (number->string inum))))
 (define (chstr inum)
-  (if (> inum 60) 
+  (if (>= inum 60) 
       (string-append (chstr (floor (/ inum 60)))
                      (string-append ":"
                                     (form (remainder inum 60))))
-  (number->string inum)))
+      (number->string inum)))
 
-;(chstr 3600)
-(form 6)
-#|(define my-canvas%
+
+(define text (chstr clock))
+
+(define frame (new frame%
+                   [label "timer"]
+                   [width 200]
+                   [height 100]
+                   ))
+
+(define timer 
+  (new timer%
+       [notify-callback (lambda () 
+                          (set! clock (+ 1 clock))
+                          (set! text (chstr clock))
+                          (send my-canvas refresh-now)
+             (send my-canvas on-paint))]
+       [interval #f]
+       [just-once? #f]))
+
+(define my-canvas%
   (class canvas% 
     (define/override (on-char event)
       (let ([keycode (send event get-key-release-code)])
         (case keycode
-          ('up
-           (set! cb  (gen-cb (mv-up cb))))
-          ('down
-           (set! cb (gen-cb (mv-down cb))))
-          ('left
-           (set! cb (gen-cb (mv-left cb))))
-          ('right
-           (set! cb (gen-cb (mv-right cb))))
-          ('#\s
-           (set! cb (gen-cb (gen-cb cb))))
           ('#\r
-           (set! cb (make-chess-board)))
+           (begin
+             (send timer stop)
+             (set! clock 0)
+             (set! text (chstr clock))
+             (send this refresh-now)
+             (send this on-paint)
+             ))
+          ('#\return
+           (send timer start 1000))
+          ('#\space 
+           (send timer stop))
           (else #f))
-        ;(set! cb  (mv-up (gen-cb cb)))
-        (set! text (change-to-str cb))
-        (if (win? cb)
-            (set! text (string-append text "You Win!"))
-            #f)
-        (if (fail? cb)
-            (set! text (string-append text "Sorry For You loss!"))
-            #f)
-        (send this refresh-now)
-        (send this on-paint))
+        )
       )
-    (super-new)))|#
+    (super-new)))
+
+(define my-canvas
+  (new my-canvas%
+     [parent frame]
+     [paint-callback
+      (lambda (canvas dc)
+        (send dc set-scale 3 3)
+        (send dc set-text-foreground "blue")
+        (send dc draw-text text 0 0 )
+        )]))
 
 (send frame show #t)
